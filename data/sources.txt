@@ -1,0 +1,14 @@
+Liste de prénoms et patronymes, par Christian Quest :
+https://www.data.gouv.fr/fr/datasets/liste-de-prenoms-et-patronymes/
+- 800.000 patronymes
+- 200.000 prénoms
+Afin de faciliter l'anonymisation de données, cette liste de prénoms et patronymes a été extraite de la base SIRENE de l'INSEE.
+Pour chaque prénom et chaque patronyme, le nombre d'apparition est indiqué.
+
+perl nettoieListePrenoms.pl data/prenoms.csv data/prenoms-fr.csv
+
+Liste de communes : https://www.insee.fr/fr/information/2114819
+Liste des communes et codes postaux : https://www.data.gouv.fr/fr/datasets/codes-postaux/
+
+Liste des établissements hospitaliers d'Ile-de-France :
+https://www.data.gouv.fr/fr/datasets/les-etablissements-hospitaliers-franciliens-idf/
