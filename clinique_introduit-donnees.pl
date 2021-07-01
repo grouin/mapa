@@ -9,7 +9,7 @@
 # corpus de cas cliniques. Ne produit que les sorties qui ont été
 # modifiées.
 
-# perl reintroduitDonnesNominatives.pl corpus/DEFT-cas-cliniques/ corpus/cas-cliniques-identifiants/
+# perl clinique_introduit-donnees.pl corpus/DEFT-cas-cliniques/ corpus/cas-cliniques-identifiants/
 
 # Auteur : Cyril Grouin, novembre 2020.
 
@@ -245,48 +245,31 @@ foreach my $sortie (sort keys %contenu) {
 # Sous-programmes
 
 sub recupereRessources() {
-    # Noms de famille : patronyme,décompte
-    my $nbNoms=0;
-    open(E,'<:utf8',"data/patronymes.csv");
+    my ($nbNoms,$nbPrenoms)=(0,0);
+
+    open(E,'<:utf8',"data/sirene/liste-noms.csv");
     while (my $ligne=<E>) {
 	$ligne=~s/ D / D\'/;
-	chomp $ligne; my @cols=split(/\,/,$ligne);
-	if ($cols[1]>4) {
-	    my $t="";
-	    # Initiale en majuscule, le reste en minuscules, avec
-	    # gestion des noms composés (espace ou trait d'union)
-	    if ($cols[0]!~/ /) { $t=substr($cols[0],0,1).lc(substr($cols[0],1)); }
-	    #elsif ($cols[0]=~/\-/) { my @c=split(/\-/,$cols[0]); foreach my $e (@c) { $t.=substr($e,0,1).lc(substr($e,1))."\-"; } chop $t; }
-	    else {
-		my @c=split(/ /,$cols[0]);
-		foreach my $e (@c) {
-		    # Les particules françaises sont en minuscules (de d' du le la)
-		    if ($e!~/^(DE|DU|D\'|LE|LA)$/) { $t.=substr($e,0,1).lc(substr($e,1))." "; }
-		    else { $t.=lc(substr($e,0))." "; }
-		}
-		chop $t;
-	    }
-	    #$t="§§ ".$t;
-	    $noms{$nbNoms}=$t; $nbNoms++;
-	    #if ($t=~/(^|\s)[a-z]+(\s|$)/) { print "--- $t\n"; }
-	}
+	chomp $ligne; my @cols=split(/\t/,$ligne);
+	my $initiale=substr($cols[1],0,1);
+	$noms{$nbNoms}=$cols[1]; $nbNoms++;
     }
     close(E);
 
-    # Prénoms : prénom,décompte
-    my $nbPrenoms=0;
-    open(E,'<:utf8',"data/prenom.csv");
+    open(E,'<:utf8',"data/sirene/liste-prenoms-fem.csv");
     while (my $ligne=<E>) {
-	chomp $ligne; my @cols=split(/\,/,$ligne);
-	if ($cols[1]>=1500) {
-	    my $t="";
-	    if ($cols[0]!~/ /) { $t=substr($cols[0],0,1).lc(substr($cols[0],1));}
-	    #elsif ($cols[0]=~/\-/) { my @c=split(/\-/,$cols[0]); foreach my $e (@c) { $t.=substr($e,0,1).lc(substr($e,1))."\-"; } chop $t; }
-	    else { my @c=split(/ /,$cols[0]); foreach my $e (@c) { $t.=substr($e,0,1).lc(substr($e,1))." "; } chop $t; }
-	    #$t="§§ ".$t;
-	    $prenoms{$nbPrenoms}=$t; $nbPrenoms++;
-	    #if ($t=~/(^|\s)[a-z]+(\s|$)/) { warn "--- $t\n"; }
-	}
+	$ligne=~s/ D / D\'/;
+	chomp $ligne; my @cols=split(/\t/,$ligne);
+	my $initiale=substr($cols[1],0,1);
+	$prenoms{$nbPrenoms}=$cols[1]; $nbPrenoms++;
+    }
+    close(E);
+    open(E,'<:utf8',"data/sirene/liste-prenoms-masc.csv");
+    while (my $ligne=<E>) {
+	$ligne=~s/ D / D\'/;
+	chomp $ligne; my @cols=split(/\t/,$ligne);
+	my $initiale=substr($cols[1],0,1);
+	$prenoms{$nbPrenoms}=$cols[1]; $nbPrenoms++;
     }
     close(E);
 
