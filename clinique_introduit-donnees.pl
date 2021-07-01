@@ -21,7 +21,7 @@ binmode STDOUT, ":encoding(utf8)";
 
 my ($in,$out)=@ARGV;
 my @fichiers=<$in/*txt>;
-my %prenoms=();
+my %prenoms=(); my %preFem=(); my %preMasc=();
 my %noms=();
 my %villes=();
 my @voiries=("impasse","avenue","place","rue","chemin","allée","boulevard","rue","route");
@@ -33,7 +33,7 @@ my %contenu=();
 ###
 # Configuration
 
-my ($maxNoms,$maxPrenoms,$maxVilles)=&recupereRessources();
+my ($maxNoms,$maxPrenoms,$maxVilles,$maxFem,$maxMasc)=&recupereRessources();
 
 
 ###
@@ -43,6 +43,8 @@ foreach my $fichier (@fichiers) {
     my $sortie=$fichier; $sortie=~s/$in/$out/;
     my $nom=int(rand($maxNoms));
     my $prenom=int(rand($maxPrenoms));
+    my $femme=int(rand($maxFem));
+    my $homme=int(rand($maxMasc));
     my $ville=int(rand($maxVilles));
     my $transfo=0;
     
@@ -57,17 +59,18 @@ foreach my $fichier (@fichiers) {
 	# Au début du cas, on ajoute prénom et nom en gérant le
 	# déclencheur (M. Mme Melle) en fonction de l'âge
 	my $decl="M.";
-	$ligne=~s/Un patient de/$decl $prenoms{$prenom} $noms{$nom}, âgé de/;
-	$ligne=~s/Un patient/$decl $prenoms{$prenom} $noms{$nom}/;
+	$ligne=~s/Un patient de/$decl $preMasc{$homme} $noms{$nom}, âgé de/;
+	$ligne=~s/Un patient/$decl $preMasc{$homme} $noms{$nom}/;
 	if ($age>18) { $decl="Mme"; } else { $decl="Melle"; }
-	$ligne=~s/Une patiente de/$decl $prenoms{$prenom} $noms{$nom}, âgée de/;
-	$ligne=~s/Une patiente/$decl $prenoms{$prenom} $noms{$nom}/;
+	$ligne=~s/Une patiente de/$decl $preFem{$femme} $noms{$nom}, âgée de/;
+	$ligne=~s/Une patiente/$decl $preFem{$femme} $noms{$nom}/;
 
 	# - il s'agit d'un(e) patient(e)/nourrisson
-	if ($ligne=~/^Il s.agit d.une? (patiente?|nourrisson)/) { $ligne=~s/^Il s.agit d./Cher collègue, $prenoms{$prenom} $noms{$nom} est /; $transfo=&log($fichier,$ligne,"$prenoms{$prenom} $noms{$nom}"); }
+	if ($ligne=~/^Il s.agit d.un (patient|nourrisson)/) { $ligne=~s/^Il s.agit d./Cher collègue, $preMasc{$homme} $noms{$nom} est /; $transfo=&log($fichier,$ligne,"$preMasc{$homme} $noms{$nom}"); }
+	if ($ligne=~/^Il s.agit d.une (patiente|nourrisson)/) { $ligne=~s/^Il s.agit d./Cher collègue, $preFem{$femme} $noms{$nom} est /; $transfo=&log($fichier,$ligne,"$preFem{$femme} $noms{$nom}"); }
 
 	# 496-3 Madame X,
-	if ($ligne=~/^(Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) \w\,/) { $ligne=~s/^(Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) \w\,/$1 $noms{$nom}\,/; $transfo=&log($fichier,$ligne,"$prenoms{$prenom} $noms{$nom}"); }
+	if ($ligne=~/^(Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) \w\,/) { $ligne=~s/^(Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) \w\,/$1 $noms{$nom}\,/; $transfo=&log($fichier,$ligne,"$noms{$nom}"); }
 	# 33 Madame C....âgée
 	if ($ligne=~/^(Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) \w\.+âgée/) { $ligne=~s/^(Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) \w\.+/$1 $noms{$nom}\, /; $transfo=&log($fichier,$ligne,"$noms{$nom}"); }
 	# 257 Patient M.B.
@@ -76,21 +79,26 @@ foreach my $fichier (@fichiers) {
 	if ($ligne=~/^\w\. \w\.\w…/) { $ligne=~s/^\w\. \w\.\w…/$noms{$nom} $prenoms{$prenom}/; $transfo=&log($fichier,$ligne,"$noms{$nom} $prenoms{$prenom}"); }
 
 	# - introduction au milieu de phrases
-	if ($ligne=~/chez une patiente de/) { $ligne=~s/chez une patiente de/chez $prenoms{$prenom} $noms{$nom}, une patiente de/g; $transfo=&log($fichier,$ligne,"$prenoms{$prenom} $noms{$nom}"); }
-	if ($ligne=~/chez un patient de/) { $ligne=~s/chez un patient de/chez $prenoms{$prenom} $noms{$nom}, un patient de/g; $transfo=&log($fichier,$ligne,"$prenoms{$prenom} $noms{$nom}"); }
-	if ($ligne=~/concerne une (femme|patiente) de/) { $ligne=~s/chez une patiente de/chez $prenoms{$prenom} $noms{$nom}, une patiente de/g; $transfo=&log($fichier,$ligne,"$prenoms{$prenom} $noms{$nom}"); }
-	if ($ligne=~/concerne un (homme|patient) de/) { $ligne=~s/chez un patient de/chez $prenoms{$prenom} $noms{$nom}, un patient de/g; $transfo=&log($fichier,$ligne,"$prenoms{$prenom} $noms{$nom}"); }
+	if ($ligne=~/chez une patiente de/) { $ligne=~s/chez une patiente de/chez $preFem{$femme} $noms{$nom}, une patiente de/g; $transfo=&log($fichier,$ligne,"$preFem{$femme} $noms{$nom}"); }
+	if ($ligne=~/chez un patient de/) { $ligne=~s/chez un patient de/chez $preMasc{$homme} $noms{$nom}, un patient de/g; $transfo=&log($fichier,$ligne,"$preMasc{$homme} $noms{$nom}"); }
+	if ($ligne=~/concerne une (femme|patiente) de/) { $ligne=~s/chez une patiente de/chez $preFem{$femme} $noms{$nom}, une patiente de/g; $transfo=&log($fichier,$ligne,"$preFem{$femme} $noms{$nom}"); }
+	if ($ligne=~/concerne un (homme|patient) de/) { $ligne=~s/chez un patient de/chez $preMasc{$homme} $noms{$nom}, un patient de/g; $transfo=&log($fichier,$ligne,"$preMasc{$homme} $noms{$nom}"); }
 
 	# - M./Mme X. : initiale remplacée par un nom
 	if ($ligne=~/chez (Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) [A-Z]\.[A-Z]\./) { $ligne=~s/chez (Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) [A-Z]\.[A-Z]\./chez $1 $noms{$nom}/g; $transfo=&log($fichier,$ligne,"$noms{$nom}"); }
 	if ($ligne=~/de (Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) [A-Z]\.[A-Z]\./) { $ligne=~s/de (Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) [A-Z]\.[A-Z]\./de $1 $noms{$nom}/g; $transfo=&log($fichier,$ligne,"$noms{$nom}"); }
-	if ($ligne=~/une patiente [A-Z]\.[A-Z]\./) { $ligne=~s/une patiente [A-Z]\.[A-Z]\./une patiente, Mme $prenoms{$prenom} $noms{$nom}/g; $transfo=&log($fichier,$ligne,"$prenoms{$prenom} $noms{$nom}"); }
-	if ($ligne=~/un patient [A-Z]\.[A-Z]\./) { $ligne=~s/un patient [A-Z]\.[A-Z]\./un patient, M. $prenoms{$prenom} $noms{$nom}/g; $transfo=&log($fichier,$ligne,"$prenoms{$prenom} $noms{$nom}"); }
-	if ($ligne=~/(Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) [A-Z][a-z]+ [A-Z]\./) { $ligne=~s/(Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) [A-Z][a-z]+ [A-Z]\./$1 $prenoms{$prenom} $noms{$nom}/g; $transfo=&log($fichier,$ligne,"$prenoms{$prenom} $noms{$nom}"); }
-	if ($ligne=~/(Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) [A-Z]\.[A-Z]\./) { $ligne=~s/(Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) [A-Z]\.[A-Z]\./$1 $prenoms{$prenom} $noms{$nom}/g; $transfo=&log($fichier,$ligne,"$prenoms{$prenom} $noms{$nom}"); }
-	if ($ligne=~/(Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) [A-Z]\.[A-Z]\,/) { $ligne=~s/(Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) [A-Z]\.[A-Z]\,/$1 $prenoms{$prenom} $noms{$nom}/g; $transfo=&log($fichier,$ligne,"$prenoms{$prenom} $noms{$nom}"); }
-	if ($ligne=~/(Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) [A-Z]\.[A-Z]\.?/) { $ligne=~s/(Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) [A-Z]\.[A-Z]\.? /$1 $prenoms{$prenom} $noms{$nom} /g; $transfo=&log($fichier,$ligne,"$prenoms{$prenom} $noms{$nom}"); }
-	if ($ligne=~/(Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) [A-Z]\. [A-Z]\.?\s?…?\,?/) { $ligne=~s/(Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) [A-Z]\. [A-Z]\.?\s?…?(\,?) /$1 $prenoms{$prenom} $noms{$nom}$2 /g; $transfo=&log($fichier,$ligne,"$prenoms{$prenom} $noms{$nom}"); }
+	if ($ligne=~/une patiente [A-Z]\.[A-Z]\./) { $ligne=~s/une patiente [A-Z]\.[A-Z]\./une patiente, Mme $preFem{$femme} $noms{$nom}/g; $transfo=&log($fichier,$ligne,"$preFem{$femme} $noms{$nom}"); }
+	if ($ligne=~/un patient [A-Z]\.[A-Z]\./) { $ligne=~s/un patient [A-Z]\.[A-Z]\./un patient, M. $preMasc{$homme} $noms{$nom}/g; $transfo=&log($fichier,$ligne,"$preMasc{$homme} $noms{$nom}"); }
+	if ($ligne=~/(Madame|Mademoiselle|Mme|Mlle|Melle) [A-Z][a-z]+ [A-Z]\./) { $ligne=~s/(Madame|Mademoiselle|Mme|Mlle|Melle) [A-Z][a-z]+ [A-Z]\./$1 $preFem{$femme} $noms{$nom}/g; $transfo=&log($fichier,$ligne,"$preFem{$femme} $noms{$nom}"); }
+	if ($ligne=~/(Monsieur|M\.|Mr\.|Mr) [A-Z][a-z]+ [A-Z]\./) { $ligne=~s/(Monsieur|M\.|Mr\.|Mr) [A-Z][a-z]+ [A-Z]\./$1 $preMasc{$homme} $noms{$nom}/g; $transfo=&log($fichier,$ligne,"$preMasc{$homme} $noms{$nom}"); }
+	if ($ligne=~/(Madame|Mademoiselle|Mme|Mlle|Melle) [A-Z]\.[A-Z]\./) { $ligne=~s/(Madame|Mademoiselle|Mme|Mlle|Melle) [A-Z]\.[A-Z]\./$1 $preFem{$femme} $noms{$nom}/g; $transfo=&log($fichier,$ligne,"$preFem{$femme} $noms{$nom}"); }
+	if ($ligne=~/(Monsieur|M\.|Mr\.|Mr) [A-Z]\.[A-Z]\./) { $ligne=~s/(Monsieur|M\.|Mr\.|Mr) [A-Z]\.[A-Z]\./$1 $preMasc{$homme} $noms{$nom}/g; $transfo=&log($fichier,$ligne,"$preMasc{$homme} $noms{$nom}"); }
+	if ($ligne=~/(Madame|Mademoiselle|Mme|Mlle|Melle) [A-Z]\.[A-Z]\,/) { $ligne=~s/(Madame|Mademoiselle|Mme|Mlle|Melle) [A-Z]\.[A-Z]\,/$1 $preFem{$femme} $noms{$nom}/g; $transfo=&log($fichier,$ligne,"$preFem{$femme} $noms{$nom}"); }
+	if ($ligne=~/(Monsieur|M\.|Mr\.|Mr) [A-Z]\.[A-Z]\,/) { $ligne=~s/(Monsieur|M\.|Mr\.|Mr) [A-Z]\.[A-Z]\,/$1 $preMasc{$homme} $noms{$nom}/g; $transfo=&log($fichier,$ligne,"$preMasc{$homme} $noms{$nom}"); }
+	if ($ligne=~/(Madame|Mademoiselle|Mme|Mlle|Melle) [A-Z]\.[A-Z]\.?/) { $ligne=~s/(Madame|Mademoiselle|Mme|Mlle|Melle) [A-Z]\.[A-Z]\.? /$1 $preFem{$femme} $noms{$nom} /g; $transfo=&log($fichier,$ligne,"$preFem{$femme} $noms{$nom}"); }
+	if ($ligne=~/(Monsieur|M\.|Mr\.|Mr) [A-Z]\.[A-Z]\.?/) { $ligne=~s/(Monsieur|M\.|Mr\.|Mr) [A-Z]\.[A-Z]\.? /$1 $preMasc{$homme} $noms{$nom} /g; $transfo=&log($fichier,$ligne,"$preMasc{$homme} $noms{$nom}"); }
+	if ($ligne=~/(Madame|Mademoiselle|Mme|Mlle|Melle) [A-Z]\. [A-Z]\.?\s?…?\,?/) { $ligne=~s/(Madame|Mademoiselle|Mme|Mlle|Melle) [A-Z]\. [A-Z]\.?\s?…?(\,?) /$1 $preFem{$femme} $noms{$nom}$2 /g; $transfo=&log($fichier,$ligne,"$preFem{$femme} $noms{$nom}"); }
+	if ($ligne=~/(Monsieur|M\.|Mr\.|Mr) [A-Z]\. [A-Z]\.?\s?…?\,?/) { $ligne=~s/(Monsieur|M\.|Mr\.|Mr) [A-Z]\. [A-Z]\.?\s?…?(\,?) /$1 $preMasc{$homme} $noms{$nom}$2 /g; $transfo=&log($fichier,$ligne,"$preMasc{$homme} $noms{$nom}"); }
 	if ($ligne=~/(Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) [A-Z]\.\s?…?\,?/) { $ligne=~s/(Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) [A-Z]\.\s?…?(\,?) /$1 $noms{$nom}$2 /g; $transfo=&log($fichier,$ligne,"$noms{$nom}"); }
 	if ($ligne=~/(Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) [A-Z]\.\,/) { $ligne=~s/(Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) [A-Z]\.\,/$1 $noms{$nom}\,/g; $transfo=&log($fichier,$ligne,"$noms{$nom}"); }
 	if ($ligne=~/(Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) \w\./) { $ligne=~s/(Madame|Mademoiselle|Monsieur|M\.|Mr\.|Mr|Mme|Mlle|Melle) \w\.+/$1 $noms{$nom}/g; $transfo=&log($fichier,$ligne,"$noms{$nom}"); }
@@ -101,22 +109,22 @@ foreach my $fichier (@fichiers) {
 	if ($ligne=~/^[A-Z]…\,/) { $ligne=~s/^[A-Z]…\,/$prenoms{$prenom} $noms{$nom}\,/g; $transfo=&log($fichier,$ligne,"$prenoms{$prenom} $noms{$nom}"); }
 
 	# - sans déclencheur mais avec prénom et nom
-	if ($ligne=~/Jeune (garçon|homme) de \d+/) { $ligne=~s/Jeune (garçon|homme) de (\d+)/$prenoms{$prenom} $noms{$nom}, âgé de $2/; $transfo=&log($fichier,$ligne,"$prenoms{$prenom} $noms{$nom}"); }
-	if ($ligne=~/Jeune fille de \d+/) { $ligne=~s/Jeune fille de (\d+)/$prenoms{$prenom} $noms{$nom}, âgée de $1/; $transfo=&log($fichier,$ligne,"$prenoms{$prenom} $noms{$nom}"); }
-	if ($ligne=~/Jeune (garçon|homme)/) { $ligne=~s/Jeune (garçon|homme)/$prenoms{$prenom} $noms{$nom}/; $transfo=&log($fichier,$ligne,"$prenoms{$prenom} $noms{$nom}"); }
-	if ($ligne=~/Jeune (fille|femme)/) { $ligne=~s/Jeune (fille|femme)/$prenoms{$prenom} $noms{$nom}/; $transfo=&log($fichier,$ligne,"$prenoms{$prenom} $noms{$nom}"); }
+	if ($ligne=~/Jeune (garçon|homme) de \d+/) { $ligne=~s/Jeune (garçon|homme) de (\d+)/$preMasc{$homme} $noms{$nom}, âgé de $2/; $transfo=&log($fichier,$ligne,"$preMasc{$homme} $noms{$nom}"); }
+	if ($ligne=~/Jeune fille de \d+/) { $ligne=~s/Jeune fille de (\d+)/$preFem{$femme} $noms{$nom}, âgée de $1/; $transfo=&log($fichier,$ligne,"$preFem{$femme} $noms{$nom}"); }
+	if ($ligne=~/Jeune (garçon|homme)/) { $ligne=~s/Jeune (garçon|homme)/$preMasc{$homme} $noms{$nom}/; $transfo=&log($fichier,$ligne,"$preMasc{$homme} $noms{$nom}"); }
+	if ($ligne=~/Jeune (fille|femme)/) { $ligne=~s/Jeune (fille|femme)/$preFem{$femme} $noms{$nom}/; $transfo=&log($fichier,$ligne,"$preFem{$femme} $noms{$nom}"); }
 
 	# - enfants : prénom seulement
-	if ($ligne=~/Un jeune (garçon|homme) de (\d+)/) { $ligne=~s/Un jeune (garçon|homme) de (\d+)/$prenoms{$prenom}, âgé de $2/; $transfo=&log($fichier,$ligne,"$prenoms{$prenom}"); }
-	if ($ligne=~/Une jeune fille de (\d+)/) { $ligne=~s/Une jeune fille de (\d+)/$prenoms{$prenom}, âgée de $1/; $transfo=&log($fichier,$ligne,"$prenoms{$prenom}"); }
-	if ($ligne=~/Un jeune (garçon|homme)/) { $ligne=~s/Un jeune (garçon|homme)/$prenoms{$prenom}/; $transfo=&log($fichier,$ligne,"$prenoms{$prenom}"); }
-	if ($ligne=~/Une jeune fille/) { $ligne=~s/Une jeune fille/$prenoms{$prenom}/; $transfo=&log($fichier,$ligne,"$prenoms{$prenom}"); }
+	if ($ligne=~/Un jeune (garçon|homme) de (\d+)/) { $ligne=~s/Un jeune (garçon|homme) de (\d+)/$preMasc{$homme}, âgé de $2/; $transfo=&log($fichier,$ligne,"$preMasc{$homme}"); }
+	if ($ligne=~/Une jeune fille de (\d+)/) { $ligne=~s/Une jeune fille de (\d+)/$preFem{$femme}, âgée de $1/; $transfo=&log($fichier,$ligne,"$preFem{$femme}"); }
+	if ($ligne=~/Un jeune (garçon|homme)/) { $ligne=~s/Un jeune (garçon|homme)/$preMasc{$homme}/; $transfo=&log($fichier,$ligne,"$preMasc{$homme}"); }
+	if ($ligne=~/Une jeune fille/) { $ligne=~s/Une jeune fille/$preFem{$femme}/; $transfo=&log($fichier,$ligne,"$preFem{$femme}"); }
 
 	# La première occurrence de "le/la patient(e)" est remplacée par "M./Mme Nom"
 	my $decl="M.";
 	if ($ligne=~/le patient/) { $ligne=~s/le patient/$decl $noms{$nom}/i; $transfo=&log($fichier,$ligne,"$decl $noms{$nom}"); }
 	if ($age>18) { $decl="Mme"; } else { $decl="Melle"; }
-	if ($age<=10) { if ($ligne=~/la patiente/) { $ligne=~s/la patiente/$prenoms{$nom}/i; $transfo=&log($fichier,$ligne,"$prenoms{$prenom}"); }}
+	if ($age<=10) { if ($ligne=~/la patiente/) { $ligne=~s/la patiente/$preFem{$femme}/i; $transfo=&log($fichier,$ligne,"$preFem{$femme}"); }}
 	else { if ($ligne=~/la patiente/) { $ligne=~s/la patiente/$decl $noms{$nom}/i; $transfo=&log($fichier,$ligne,"$decl $noms{$nom}"); }}
 
 	# - médecin
@@ -245,7 +253,7 @@ foreach my $sortie (sort keys %contenu) {
 # Sous-programmes
 
 sub recupereRessources() {
-    my ($nbNoms,$nbPrenoms)=(0,0);
+    my ($nbNoms,$nbPrenoms,$nbFem,$nbMasc)=(0,0,0,0);
 
     open(E,'<:utf8',"data/sirene/liste-noms.csv");
     while (my $ligne=<E>) {
@@ -261,7 +269,7 @@ sub recupereRessources() {
 	$ligne=~s/ D / D\'/;
 	chomp $ligne; my @cols=split(/\t/,$ligne);
 	my $initiale=substr($cols[1],0,1);
-	$prenoms{$nbPrenoms}=$cols[1]; $nbPrenoms++;
+	$prenoms{$nbPrenoms}=$cols[1]; $preFem{$nbFem}=$cols[1]; $nbPrenoms++; $nbFem++;
     }
     close(E);
     open(E,'<:utf8',"data/sirene/liste-prenoms-masc.csv");
@@ -269,7 +277,7 @@ sub recupereRessources() {
 	$ligne=~s/ D / D\'/;
 	chomp $ligne; my @cols=split(/\t/,$ligne);
 	my $initiale=substr($cols[1],0,1);
-	$prenoms{$nbPrenoms}=$cols[1]; $nbPrenoms++;
+	$prenoms{$nbPrenoms}=$cols[1]; $preMasc{$nbMasc}=$cols[1]; $nbPrenoms++; $nbMasc++;
     }
     close(E);
 
@@ -282,7 +290,7 @@ sub recupereRessources() {
     }
     close(E);
 
-    return ($nbNoms,$nbPrenoms,$nbVilles);
+    return ($nbNoms,$nbPrenoms,$nbVilles,$nbFem,$nbMasc);
 }
 
 sub genereAdresse() {
