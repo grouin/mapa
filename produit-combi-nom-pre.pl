@@ -57,7 +57,7 @@ close(E);
 # masculines. Tirage aléatoire d'un nom et d'un prénom, et
 # vérification si la combinaison n'existe pas déjà
 
-my ($nom,$prenom,%deja);
+my ($nom,$prenom,%deja,%listeF,%listeM);
 
 for (my $i=0;$i<10000;$i++) {
     $nom=$noms[int(rand($#noms))];
@@ -69,12 +69,19 @@ for (my $i=0;$i<10000;$i++) {
 	$nom=$noms[int(rand($#noms))];
 	if ($i<5000) { $prenom=$prenomsF[int(rand($#prenomsF))]; } else { $prenom=$prenomsM[int(rand($#prenomsM))]; }
     }
-    $deja{"$prenom$sep$nom"}++;
+    $deja{"$prenom$sep$nom"}++;    # Pour vérification combinaison inexistante
+    # Pour affichage en sortie (distinction f/h)
+    if ($i<5000) { $listeF{"$prenom$sep$nom"}++; } else { $listeM{"$prenom$sep$nom"}++; }
 }
 
 
 # Production du fichier de sortie
 
-open(S,'>:utf8',"liste-10000.txt");
-foreach my $l (sort keys %deja) { print S "$l\n"; }
+#open(S,'>:utf8',"liste-10000.txt");
+#foreach my $l (sort keys %deja) { print S "$l\n"; }
+
+# Version 5000 premières lignes féminines, 5000 suivantes masculines
+open(S,'>:utf8',"liste-5000f-5000h.txt");
+foreach my $l (sort keys %listeF) { print S "$l\n"; }
+foreach my $l (sort keys %listeM) { print S "$l\n"; }
 close(S);
