@@ -21,9 +21,24 @@ perl ../../nettoieListePrenoms.pl liste-prenoms-fem-brut.csv liste-prenoms-fem.c
 perl ../../nettoieListePrenoms.pl liste-prenoms-masc-brut.csv liste-prenoms-masc.csv 3
 cd ../../
 
+# Nettoyage manuel (septembre 2021) pour supprimer des listes les
+# prénoms clairement f/h
+
 # Production d'une liste de 10000 noms prénoms pour le français
 
 perl produit-combi-nom-pre.pl
+
+
+# Génération de deux listes séparées d'identités féminines et
+# masculines à partir de cette liste de 10000 identités (demande
+# réalisée a posteriori), avec gestion des prénoms épicènes (Alix,
+# Camille, Claude, Dominique, Elie, Sacha, Stéphane, etc.), issus des
+# deux listes, pour conserver une répartition équilibrée entre 5000
+# identités féminines et 5000 masculines (gestion effectuée en tenant
+# compte de la fréquence d'utilisation de ces prénoms entre femmes et
+# hommes dans la société)
+
+perl trieListeCombinaison.pl liste-10000.txt
 
 
 
