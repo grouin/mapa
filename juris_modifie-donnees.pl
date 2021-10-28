@@ -124,12 +124,12 @@ foreach my $fichier (@fichiers) {
 	    if (exists $listeNomsFeminins{$initialeNom}) { $nomProduit=$listeNomsFeminins{$initialeNom}; }
 	    else {
 		my @nomsIni=split(/§/,$noms{$initialeNom}); my $alea=int(rand($#nomsIni+1));
-		$nomProduit=$nomsIni[$alea]; $listeNomsMasculins{$initialeNom}=$nomsIni[$alea];
+		$nomProduit=$nomsIni[$alea]; $listeNomsFeminins{$initialeNom}=$nomsIni[$alea];
 	    }
 	    if (exists $listePrenomsFeminins{$initialePrenom}) { $prenomProduit=$listePrenomsFeminins{$initialePrenom}; }
 	    else {
 		my @prenomsIni=split(/§/,$prenomsFem{$initialePrenom}); my $alea=int(rand($#prenomsIni+1));
-		$prenomProduit=$prenomsIni[$alea]; $listePrenomsMasculins{$initialePrenom}=$prenomsIni[$alea];
+		$prenomProduit=$prenomsIni[$alea]; $listePrenomsFeminins{$initialePrenom}=$prenomsIni[$alea];
 	    }
 	    
 	    $ligne=~s/Mme \w\.\.\. \w\.\.\./Mme $nomProduit $prenomProduit/; $transfo=&log($fichier,$ligne,"$nomProduit $prenomProduit");
@@ -143,12 +143,12 @@ foreach my $fichier (@fichiers) {
 	    if (exists $listeNomsFeminins{$initialeNom}) { $nomProduit=$listeNomsFeminins{$initialeNom}; }
 	    else {
 		my @nomsIni=split(/§/,$noms{$initialeNom}); my $alea=int(rand($#nomsIni+1));
-		$nomProduit=$nomsIni[$alea]; $listeNomsMasculins{$initialeNom}=$nomsIni[$alea];
+		$nomProduit=$nomsIni[$alea]; $listeNomsFeminins{$initialeNom}=$nomsIni[$alea];
 	    }
 	    if (exists $listePrenomsFeminins{$initialePrenom}) { $prenomProduit=$listePrenomsFeminins{$initialePrenom}; }
 	    else {
 		my @prenomsIni=split(/§/,$prenomsFem{$initialePrenom}); my $alea=int(rand($#prenomsIni+1));
-		$prenomProduit=$prenomsIni[$alea]; $listePrenomsMasculins{$initialePrenom}=$prenomsIni[$alea];
+		$prenomProduit=$prenomsIni[$alea]; $listePrenomsFeminins{$initialePrenom}=$prenomsIni[$alea];
 	    }
 	    
 	    $ligne=~s/Madame \w\.\.\. \w\.\.\./Madame $nomProduit $prenomProduit/; $transfo=&log($fichier,$ligne,"$nomProduit $prenomProduit");
